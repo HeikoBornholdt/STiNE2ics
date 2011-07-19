@@ -1,19 +1,19 @@
-
+#!/usr/bin/env ruby
 ##################################################
 # @author Heiko Bornholdt <heikobornholdt@me.com>
-
-NAME = ''
-PASSWORD = ''
-
 ##################################################
 
 require 'rubygems'
+require 'highline/import'
 require 'httpclient'
 require 'htmlentities'
-require 'time'
 require 'icalendar'
 
-include Icalendar # Probably do this in your class to limit namespace overlap
+NAME = ask("Enter your username: ") { |q| q.echo = true }
+PASSWORD = ask("Enter your password (not shown on the screen): ") { |q| q.echo = "*" }
+
+
+include Icalendar
 calendar = Calendar.new
 
 client = HTTPClient.new
@@ -36,7 +36,12 @@ result = client.post('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll',
  })
 
 # read ARGUMENTS
-arguments = result.header['REFRESH'].first.sub(/.*ARGUMENTS=(.+)/, '\\1')
+begin
+  arguments = result.header['REFRESH'].first.sub(/.*ARGUMENTS=(.+)/, '\\1')
+rescue
+  puts result.body.sub(/.*<h1>(.+)<\/h1>.*/, '\\1')
+  exit
+end
 
 # get courses
 result = client.get('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PROFCOURSES&ARGUMENTS=' + arguments)
@@ -75,7 +80,8 @@ result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>(.+)<\
 end
 
 # save into file
-file = File.new("stine.ics", "w")
+filename = 'stine.ics'
+file = File.new(filename, 'w')
 file.puts(calendar.to_ical)
 file.close
-puts File.dirname(__FILE__) + "/stine.ics"
+puts 'The events has been written to: ' + File.dirname(__FILE__) + '/' + filename

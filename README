@@ -1,3 +1,7 @@
 Open your command-line and run stine2ical.rb
 
+$ ruby ./stine2ical.rb
+
+you can also try
+
 $ ./stine2ical.rb
