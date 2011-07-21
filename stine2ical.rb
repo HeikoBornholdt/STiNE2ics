@@ -13,6 +13,8 @@ NAME = ask("Enter your username: ") { |q| q.echo = true }
 PASSWORD = ask("Enter your password (not shown on the screen): ") { |q| q.echo = "*" }
 
 
+
+
 include Icalendar
 calendar = Calendar.new
 
@@ -35,6 +37,7 @@ result = client.post('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll',
   'usrname' => NAME
  })
 
+
 # read ARGUMENTS
 begin
   arguments = result.header['REFRESH'].first.sub(/.*ARGUMENTS=(.+)/, '\\1')
@@ -43,33 +46,39 @@ rescue
   exit
 end
 
+
+def translateToEnglishDate(string)
+  string = string.sub(/Mai/, 'May')
+  string = string.sub(/Dez/, 'Dec')
+  return string
+end
+
 # get courses
 result = client.get('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PROFCOURSES&ARGUMENTS=' + arguments)
 result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>(.+)<\/a>/).each do |course,name|
-  course = "#{course}" # TODO: there musst be a better way for casting to string!
-  name = "#{name}" # TODO: there musst be a better way for casting to string!
-  
-  puts name
+  course = course.to_s()
+  name = name.to_s()  
+#  puts name
 
   # open course
   result = client.get(HTMLEntities.new.decode('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll' + course))
 
   # get events
   result.body.scan(/<li  class="courseListCell numout" title="(.*)" >/).each do |event|
-    event = "#{event}" # TODO: there musst be a better way for casting to string!
-    
+    event = event.to_s()    
     puts "\t" + event
 
     splits = event.split(/\//)
     times = splits[1].split(/-/)
     # translate german months
-    splits[0] = splits[0].sub(/Mai/, 'May')
-    splits[0] = splits[0].sub(/Dez/, 'Dec')
- 
+    splits[0] = translateToEnglishDate( splits[0] ) 
+
     startTime = splits[0] + times[0]
     endTime = splits[0] + times[1]
     location = splits[2]
-    
+
+    puts startTime +"<-"
+
     event = Event.new
     event.summary = name
     event.start = DateTime.parse(startTime)
@@ -79,9 +88,29 @@ result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>(.+)<\
   end
 end
 
+# get exams
+result = client.get('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=MYEXAMS&ARGUMENTS=' + arguments)
+result.body.scan(/<tr>.*?<a.*?>(.*?)<\/a>.*?<a.*?>(.*?)<\/a>.*?<a.*?>(.*?)<\/a>.*?<\/tr>/m).each do |modullong,modulshort,date|
+ 
+  name = modullong.to_s()
+  
+  startTime = translateGermanMonths( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\2:00') )
+  endTime =   translateGermanMonths( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\3:00') )
+
+  puts startTime
+  puts endTime
+
+  event = Event.new
+  event.summary = name + "(Klausur)"
+  event.start = DateTime.parse(startTime)
+  event.end = DateTime.parse(endTime)
+  calendar.add_event(event)
+end
+
 # save into file
 filename = 'stine.ics'
 file = File.new(filename, 'w')
 file.puts(calendar.to_ical)
 file.close
 puts 'The events has been written to: ' + File.dirname(__FILE__) + '/' + filename
+
