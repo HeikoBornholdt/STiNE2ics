@@ -41,7 +41,9 @@ result = client.post('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll',
 begin
   arguments = result.header['REFRESH'].first.sub(/.*ARGUMENTS=(.+)/, '\\1')
 rescue
+  # login failed
   puts result.body.sub(/.*<h1>(.+)<\/h1>.*/, '\\1')
+  puts 'login failed'
   exit
 end
 
@@ -56,18 +58,20 @@ end
 
 # get courses
 result = client.get('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PROFCOURSES&ARGUMENTS=' + arguments)
-result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>(.+)<\/a>/).each do |course,name|
-  course = course.to_s()
-  name = name.to_s().encode('utf-8', 'iso-8859-1')
-  puts name
-
+result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>/).each do |course|
+  course = course.first
+  
   # open course
   result = client.get(HTMLEntities.new.decode('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll' + course))
+
+  # get name
+  name = result.body.sub(/.*<h1 >(.+)<\/h1>.*/m, '\\1').split(/\r\n|\r|\n/)[2].encode('utf-8', 'iso-8859-1')
+  puts name
 
   # get events
   result.body.scan(/<li  class="courseListCell numout" title="(.*)" >/).each do |event|
     event = event.first  
-    puts "\t" + event
+    #puts "\t" + event
 
     splits = event.split(/\//)
     times = splits[1].split(/-/)
