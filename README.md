@@ -1,13 +1,18 @@
-REQUIREMENTS
-============
+STiNE2iCal
+==========
+
+Requirements
+------------
+
 This script requires rubygems and theses gems:
 - highland
 - httpclient
 - htmlentities
 - icalendar
 
-RUN
-===
+Run
+---
+
 Open your command-line and run stine2ical.rb
 
 $ ruby ./stine2ical.rb
