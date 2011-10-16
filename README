@@ -1,15 +1,13 @@
-
 REQUIREMENTS
-
+============
 This script requires rubygems and theses gems:
 - highland
 - httpclient
 - htmlentities
 - icalendar
 
-
 RUN
-
+===
 Open your command-line and run stine2ical.rb
 
 $ ruby ./stine2ical.rb
