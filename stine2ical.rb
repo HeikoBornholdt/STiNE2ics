@@ -1,4 +1,5 @@
 #!/usr/bin/env ruby
+# encoding: UTF-8
 ##################################################
 # @author Heiko Bornholdt <heikobornholdt@me.com>
 ##################################################
@@ -46,8 +47,10 @@ end
 
 
 def translateToEnglishDate(string)
+  string = string.sub(/Mär/, 'Mar')
   string = string.sub(/Mai/, 'May')
-  string = string.sub(/Dez/, 'Dec')
+  string = string.sub(/Okt/, 'Oct')
+  string = string.sub(/Dez/, 'Dec')  
   return string
 end
 
@@ -69,7 +72,7 @@ result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>(.+)<\
     splits = event.split(/\//)
     times = splits[1].split(/-/)
     # translate german months
-    splits[0] = translateToEnglishDate( splits[0] ) 
+    splits[0] = translateToEnglishDate(splits[0]) 
 
     startTime = splits[0] + times[0]
     endTime = splits[0] + times[1]
@@ -112,5 +115,3 @@ file = File.new(filename, 'w')
 file.puts(calendar.to_ical)
 file.close
 puts 'The events has been written to: ' + File.dirname(__FILE__) + '/' + filename
-
-
