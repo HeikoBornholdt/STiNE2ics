@@ -87,21 +87,23 @@ end
 # get exams
 puts "get exams"
 result = client.get('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=MYEXAMS&ARGUMENTS=' + arguments)
-result.body.scan(/<tr>.*?<a.*?>(.*?)<\/a>.*?<a.*?>(.*?)<\/a>.*?<\/tr>/m).each do |modullong,date|
-  puts "\t" + modullong + " / " + date
-  name = modullong.to_s()
-  
-  startTime = translateToEnglishDate( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\2:00') )
-  endTime =   translateToEnglishDate( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\3:00') )
+result.body.scan(/<tr>.*?<a.*?>(.*?)<\/a>.*?(<a.*?>(.*?)<\/a>|k.Terminbuchung).*?<\/tr>/m).each do |modullong,datestring,date|
+  if (date != nil)
+	puts "\t" + modullong + " / " + date
+    name = modullong.to_s()
 
-#  puts startTime
-#  puts endTime
+    startTime = translateToEnglishDate( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\2:00') )
+    endTime =   translateToEnglishDate( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\3:00') )
 
-  event = Event.new
-  event.summary = name + "(Klausur)"
-  event.start = DateTime.parse(startTime)
-  event.end = DateTime.parse(endTime)
-  calendar.add_event(event)
+    #puts startTime
+    #puts endTime
+
+    event = Event.new
+    event.summary = name + "(Klausur)"
+    event.start = DateTime.parse(startTime)
+    event.end = DateTime.parse(endTime)
+    calendar.add_event(event)
+  end
 end
 
 # save into file
