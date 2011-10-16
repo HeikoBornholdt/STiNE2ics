@@ -5,7 +5,7 @@ Requirements
 ------------
 
 This script requires rubygems and theses gems:
-* highland
+* highline
 * httpclient
 * htmlentities
 * icalendar
