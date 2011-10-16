@@ -73,7 +73,7 @@ result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>(.+)<\
 
     startTime = splits[0] + times[0]
     endTime = splits[0] + times[1]
-    location = splits[2]
+    location = splits[2].strip!
 
     event = Event.new
     event.summary = name
