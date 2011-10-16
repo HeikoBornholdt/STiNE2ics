@@ -55,7 +55,7 @@ end
 result = client.get('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNAME=CampusNet&PRGNAME=PROFCOURSES&ARGUMENTS=' + arguments)
 result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>(.+)<\/a>/).each do |course,name|
   course = course.to_s()
-  name = name.to_s()  
+  name = name.to_s().encode('utf-8', 'iso-8859-1')
   puts name
 
   # open course
