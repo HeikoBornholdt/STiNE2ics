@@ -97,7 +97,7 @@ result = client.get('https://www.stine.uni-hamburg.de/scripts/mgrqispi.dll?APPNA
 result.body.scan(/<tr>.*?<a.*?>(.*?)<\/a>.*?(<a.*?>(.*?)<\/a>|k.Terminbuchung).*?<\/tr>/m).each do |modullong,datestring,date|
   if (date != nil)
 	puts "\t" + modullong + " / " + date
-    name = modullong.to_s()
+    name = modullong.to_s().encode('utf-8', 'iso-8859-1')
 
     startTime = translateToEnglishDate( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\2:00') )
     endTime =   translateToEnglishDate( date.sub(/[a-z]{2}, (.*?) (..:..)-(..:..)/im, '\\1  \\3:00') )
