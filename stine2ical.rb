@@ -71,7 +71,7 @@ result.body.scan(/(\?APPNAME=CampusNet&amp;PRGNAME=COURSEDETAILS[^"]+).*?>/).eac
   # get events
   result.body.scan(/<li  class="courseListCell numout" title="(.*)" >/).each do |event|
     event = event.first  
-    #puts "\t" + event
+    puts "\t" + event
 
     splits = event.split(/\//)
     times = splits[1].split(/-/)
